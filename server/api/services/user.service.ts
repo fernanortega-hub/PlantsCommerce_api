@@ -1,5 +1,6 @@
 import * as userRepository from "../repositories/user.repository"
 import { IUser, ResponseHandler } from "../types/types"
+import bcrypt from 'bcryptjs'
 
 
 async function getById(id: string): Promise<ResponseHandler<IUser | null>> {
@@ -13,10 +14,10 @@ async function getById(id: string): Promise<ResponseHandler<IUser | null>> {
         data: null
     }
 
-    if(foundedUser == null) 
+    if (foundedUser == null)
         return response
 
-    
+
     response.isSuccessful = true
     response.statusCode = 200
     response.status = "Success"
@@ -38,10 +39,10 @@ async function getByEmail(email: string): Promise<ResponseHandler<IUser | null>>
         data: null
     }
 
-    if(foundedUser == null) 
+    if (foundedUser == null)
         return response
 
-    
+
     response.isSuccessful = true
     response.statusCode = 200
     response.status = "Success"
@@ -54,7 +55,7 @@ async function getByEmail(email: string): Promise<ResponseHandler<IUser | null>>
 
 async function getAll(limit: number): Promise<ResponseHandler<Array<IUser>>> {
     const users = await userRepository.getAll(limit);
-    
+
     const response: ResponseHandler<Array<IUser>> = {
         isSuccessful: false,
         status: "Not found",
@@ -65,14 +66,14 @@ async function getAll(limit: number): Promise<ResponseHandler<Array<IUser>>> {
 
     response.isSuccessful = users.length !== 0
     response.data = users
-    response.statusCode = users.length !== 0 ? 200 :  404
+    response.statusCode = users.length !== 0 ? 200 : 404
     response.message = users.length !== 0 ? "Users founded" : "Not users"
     response.status = users.length !== 0 ? "Founded" : "Not found"
 
     return response;
 };
 
-async function login(email: string, password: string): Promise<ResponseHandler<string | null>>  {
+async function login(email: string, password: string): Promise<ResponseHandler<string | null>> {
     const user = await userRepository.get({ email: email });
     const response: ResponseHandler<string | null> = {
         isSuccessful: false,
@@ -82,7 +83,7 @@ async function login(email: string, password: string): Promise<ResponseHandler<s
         status: "Error"
     }
 
-    if (!user) 
+    if (!user)
         return response
 
     const validPassword = await user.validPassword(password)
@@ -105,7 +106,7 @@ async function login(email: string, password: string): Promise<ResponseHandler<s
 
 async function registerUser(user: IUser): Promise<ResponseHandler<IUser | null>> {
     const isNew = await userRepository.get({ email: user.email });
-    const response: ResponseHandler<IUser | null> =  {
+    const response: ResponseHandler<IUser | null> = {
         isSuccessful: false,
         data: null,
         statusCode: 400,
@@ -118,7 +119,7 @@ async function registerUser(user: IUser): Promise<ResponseHandler<IUser | null>>
         response.status = 'ERROR'
         response.message = 'User already exists'
 
-        return response; 
+        return response;
     }
 
     const newUser = await userRepository.create(user);
@@ -141,23 +142,44 @@ async function updateUser(user: IUser): Promise<ResponseHandler<IUser | null>> {
         data: null,
     }
 
-    const foundedUser = await userRepository.get({ _id: user.id!! })
+    const foundedUser = await userRepository.get({ _id: user._id!! })
 
-    if(!foundedUser) 
+    if (!foundedUser)
         return response
-    
+
+    const userExists = await getByEmail(user.email)
+
+    if (userExists.data != null) {
+        response.data = null
+        response.message = "User already exists, select another email"
+        response.status = "Conflict"
+        response.statusCode = 409
+        return response
+    }
+
     const newFields: IUser = {
         firstName: user.firstName || foundedUser.firstName,
         lastName: user.lastName || foundedUser.lastName,
         password: user.password || foundedUser.password,
         email: user.email || foundedUser.email,
         role: user.role || foundedUser.role,
-        id: foundedUser.id
+        _id: foundedUser._id
     }
 
-    const updatedUser = await userRepository.update({ _id: newFields.id }, newFields)
+    if (user.password !== undefined) {
+        const salt = await bcrypt.genSalt(parseInt(process.env.SALT!!))
 
-    if(!updatedUser) {
+        const modifiedPassword = await bcrypt.compare(user.password, newFields.password)
+
+        if (!modifiedPassword) {
+            newFields.password = await bcrypt.hash(newFields.password, salt)
+        }
+    }
+
+
+    const updatedUser = await userRepository.update({ _id: newFields._id }, newFields)
+
+    if (!updatedUser) {
         response.statusCode = 500
         response.status = "Update failed"
         response.message = "User cannot be updated"
@@ -173,5 +195,38 @@ async function updateUser(user: IUser): Promise<ResponseHandler<IUser | null>> {
     return response
 }
 
+async function deleteUser(id: string): Promise<ResponseHandler<Boolean | null>> {
+    const response: ResponseHandler<Boolean> = {
+        isSuccessful: false,
+        message: "User not found",
+        statusCode: 404,
+        status: "Not found",
+        data: null,
+    }
+    const foundedUser = await userRepository.get({ _id: id })
 
-export default { getAll, getByEmail, getById, registerUser, login, updateUser };
+    if (!foundedUser) {
+        return response
+    }
+
+    const userDeleted = await userRepository.deleteUser(id)
+
+    if (!userDeleted) {
+        response.message = "Cannot delete user"
+        response.status = "Service error"
+        response.statusCode = 500
+        response.data = false
+        return response
+    }
+
+    response.isSuccessful = true
+    response.data = true
+    response.status = "Deleted"
+    response.message = "User deleted successfully"
+    response.statusCode = 202
+
+    return response
+}
+
+
+export default { getAll, getByEmail, getById, registerUser, login, updateUser, deleteUser };

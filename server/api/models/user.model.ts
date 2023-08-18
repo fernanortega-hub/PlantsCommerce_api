@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { IUser, IUserMethods, UserModel } from "../types/types";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
+import { rename } from "fs";
 
 const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
     firstName: {
@@ -39,21 +40,23 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 });
 
 UserSchema.pre('save', async function (next) {
-    const salt = await bcrypt.genSalt()
+    const salt = await bcrypt.genSalt(parseInt(process.env.SALT!!))
     const hashedPassword = await bcrypt.hash(this.password, salt)
     
     this.password = hashedPassword
     next()
 })
 
-UserSchema.pre('findOneAndUpdate', async function (this) {
-    const salt = await bcrypt.genSalt()
-    let update = this.getUpdate() as IUser
+// UserSchema.pre('findOneAndUpdate', async function (this) {
+//     const salt = await bcrypt.genSalt(parseInt(process.env.SALT!!))
+//     let update = this.getUpdate() as IUser
 
-    update.password = await bcrypt.hash(update.password, salt)
+//     const isNewPassword = bcrypt.compare(update.password, )
 
-    this.setUpdate(update)
-})
+//     update.password = await bcrypt.hash(update.password, salt)
+
+//     this.setUpdate(update)
+// })
 
 UserSchema.methods.validPassword = async function validPassword(password: string) {
     const valid = await bcrypt.compare(password, this.password)
@@ -61,11 +64,11 @@ UserSchema.methods.validPassword = async function validPassword(password: string
 }
 
 UserSchema.methods.generateJwt = function generateJwt() {
-    return jwt.sign({ id: this._id }, process.env.JWT_TOKEN_SECRET!!);
+    return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET!!);
 };
 
 UserSchema.methods.generateRecoveryJwt = function generateRecoveryJwt() {
-    return jwt.sign({ id: this._id }, process.env.JWT_RECOVERY_SECRET!!, { expiresIn: '15m' });
+    return jwt.sign({ _id: this._id }, process.env.JWT_RECOVERY_SECRET!!, { expiresIn: '15m' });
 };
 
 UserSchema.methods.validRecoveryJwt = function validRecoveryJwt(token: string) {

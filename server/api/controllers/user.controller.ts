@@ -1,5 +1,5 @@
 import userService from "../services/user.service";
-import { Request, Response } from "express";
+import { Request, Response, response } from "express";
 import { ResponseHandler } from "../types/types";
 import { IUser } from "../types/types";
 
@@ -62,4 +62,21 @@ async function update(req: Request, res: Response) {
     }
 }
 
-export default { getAll, getById, update }
+async function deleteUser(req: Request, res: Response) {
+    try {
+        const { id }: any = req.body
+    
+        const response = await userService.deleteUser(id)
+
+        return res
+            .status(response.statusCode)
+            .send(response)
+
+    } catch (error) {
+        return res
+            .status(error.statusCode ?? 500)
+            .send(resError(error))
+    }
+}
+
+export default { getAll, getById, update, deleteUser }

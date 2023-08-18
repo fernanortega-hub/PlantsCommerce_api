@@ -3,7 +3,11 @@ import { Request, Response, NextFunction } from "express";
 import { ResponseHandler } from "../types/types";
 import userService from "../services/user.service";
 
-export default async function validateForUpdateUser(
+/**
+ * 
+ * middleware para validar dos cosas, si el usuario que desea modificar a otro es el mismo ó si es administrador
+ */
+export default async function validateForModifyUser(
     req: Request,
     res: Response,
     next: NextFunction
@@ -44,9 +48,9 @@ export default async function validateForUpdateUser(
             .send(unauthorizedResponse)
         return
     }
-    const { id }: any = payload
+    const { _id }: any = payload
 
-    const user = await userService.getById(id)
+    const user = await userService.getById(_id)
 
     if(!user.isSuccessful || user.data == null) {
         res
@@ -56,7 +60,25 @@ export default async function validateForUpdateUser(
     }
 
 
-    if(user.data.id !== req.body.id && user.data.role !== "admin") {
+    if(user.data.role === "admin") {
+        next()
+        return
+    }
+
+    console.log(typeof req.body.role)
+
+    if(typeof req.body.role !== undefined) {
+        unauthorizedResponse.statusCode = 403
+        unauthorizedResponse.status = "Unauthorized"
+        unauthorizedResponse.message = "Unauthorized for this update"
+
+        res
+            .status(403)
+            .send(unauthorizedResponse)
+        return
+    }
+
+    if(user.data._id?.toString() !== req.body._id) {
         unauthorizedResponse.statusCode = 403
         unauthorizedResponse.status = "Unauthorized"
         unauthorizedResponse.message = "Unauthorized for this update"

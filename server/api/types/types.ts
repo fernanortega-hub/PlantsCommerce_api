@@ -2,7 +2,7 @@ import { JwtPayload } from "jsonwebtoken"
 import { Types, Model } from "mongoose"
 
 export interface IUser  {
-    id?: string
+    _id?: string
     firstName: string
     lastName: string,
     email: string,
