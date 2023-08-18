@@ -2,8 +2,8 @@ import * as userRepository from "../repositories/user.repository"
 import { IUser, ResponseHandler } from "../types/types"
 
 
-async function getById(_id: string): Promise<ResponseHandler<IUser | null>> {
-    const foundedUser = await userRepository.get({ _id: _id })
+async function getById(id: string): Promise<ResponseHandler<IUser | null>> {
+    const foundedUser = await userRepository.get({ _id: id })
 
     const response: ResponseHandler<IUser | null> = {
         isSuccessful: false,
@@ -127,10 +127,51 @@ async function registerUser(user: IUser): Promise<ResponseHandler<IUser | null>>
     response.isSuccessful = true
     response.message = "User registered successfully"
     response.statusCode = 201
-    response.status = "success"
+    response.status = "Created"
 
     return response;
 }
 
+async function updateUser(user: IUser): Promise<ResponseHandler<IUser | null>> {
+    const response: ResponseHandler<IUser | null> = {
+        isSuccessful: false,
+        status: "Not found",
+        statusCode: 404,
+        message: "User not found",
+        data: null,
+    }
 
-export default { getAll, getByEmail, getById, registerUser, login };
+    const foundedUser = await userRepository.get({ _id: user.id!! })
+
+    if(!foundedUser) 
+        return response
+    
+    const newFields: IUser = {
+        firstName: user.firstName || foundedUser.firstName,
+        lastName: user.lastName || foundedUser.lastName,
+        password: user.password || foundedUser.password,
+        email: user.email || foundedUser.email,
+        role: user.role || foundedUser.role,
+        id: foundedUser.id
+    }
+
+    const updatedUser = await userRepository.update({ _id: newFields.id }, newFields)
+
+    if(!updatedUser) {
+        response.statusCode = 500
+        response.status = "Update failed"
+        response.message = "User cannot be updated"
+        return response
+    }
+
+    response.data = updatedUser
+    response.isSuccessful = true
+    response.message = "User updated successfully"
+    response.status = "Success"
+    response.statusCode = 200
+
+    return response
+}
+
+
+export default { getAll, getByEmail, getById, registerUser, login, updateUser };

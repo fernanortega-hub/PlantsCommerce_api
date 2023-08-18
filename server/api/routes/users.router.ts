@@ -1,10 +1,11 @@
 import express from 'express';
 import userController from '../controllers/user.controller';
-import validateUser from '../middlewares/validateuser';
+import validateForUpdateUser from '../middlewares/validateForUpdateUser';
 
 const userRouter = express
     .Router()
-    .get('/', [validateUser] ,userController.getAll)
-    .get('/:id',[validateUser], userController.getById)
+    .get('/', userController.getAll)
+    .get('/:id', userController.getById)
+    .patch('/update', [validateForUpdateUser], userController.update)
 
 export default userRouter

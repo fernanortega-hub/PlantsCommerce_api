@@ -38,12 +38,21 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
     }
 });
 
-UserSchema.pre('save', async function hashPassword(next) {
+UserSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt()
     const hashedPassword = await bcrypt.hash(this.password, salt)
     
     this.password = hashedPassword
     next()
+})
+
+UserSchema.pre('findOneAndUpdate', async function (this) {
+    const salt = await bcrypt.genSalt()
+    let update = this.getUpdate() as IUser
+
+    update.password = await bcrypt.hash(update.password, salt)
+
+    this.setUpdate(update)
 })
 
 UserSchema.methods.validPassword = async function validPassword(password: string) {
@@ -52,11 +61,11 @@ UserSchema.methods.validPassword = async function validPassword(password: string
 }
 
 UserSchema.methods.generateJwt = function generateJwt() {
-    return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET!!);
+    return jwt.sign({ id: this._id }, process.env.JWT_TOKEN_SECRET!!);
 };
 
 UserSchema.methods.generateRecoveryJwt = function generateRecoveryJwt() {
-    return jwt.sign({ _id: this._id }, process.env.JWT_RECOVERY_SECRET!!, { expiresIn: '15m' });
+    return jwt.sign({ id: this._id }, process.env.JWT_RECOVERY_SECRET!!, { expiresIn: '15m' });
 };
 
 UserSchema.methods.validRecoveryJwt = function validRecoveryJwt(token: string) {

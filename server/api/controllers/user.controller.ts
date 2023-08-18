@@ -1,6 +1,17 @@
 import userService from "../services/user.service";
 import { Request, Response } from "express";
 import { ResponseHandler } from "../types/types";
+import { IUser } from "../types/types";
+
+const resError = (error: any): ResponseHandler<Error> => {
+    return {
+        isSuccessful: false,
+        data: null,
+        statusCode: error.statusCode ?? 500,
+        message: error.message,
+        status: error.message,
+    }
+}
 
 async function getAll(req: Request<{}, {}, {}, any>, res: Response) {
     try {
@@ -12,15 +23,9 @@ async function getAll(req: Request<{}, {}, {}, any>, res: Response) {
             .status(response.statusCode)
             .json(response)
     } catch (error) {
-        const resError: ResponseHandler<Error> = {
-            isSuccessful: false,
-            data: null,
-            statusCode: error.statusCode ?? 500,
-            message: error.message,
-            status: error.message
-        }
-
-        return resError
+        return res
+            .status(error.statusCode ?? 500)
+            .send(resError(error))
     }
 }
 
@@ -34,18 +39,27 @@ async function getById(req: Request<{}, {}, {}, string>, res: Response) {
             .status(response.statusCode)
             .json(response)
     } catch (error) {
-        const resError: ResponseHandler<Error> = {
-            isSuccessful: false,
-            data: null,
-            statusCode: error.statusCode ?? 500,
-            message: error.message,
-            status: error.message
-        }
-
         return res
             .status(error.statusCode ?? 500)
-            .send(resError) 
+            .send(resError(error))
     }
 }
 
-export default { getAll, getById }
+async function update(req: Request, res: Response) {
+    try {
+        const user: IUser = req.body
+    
+        const response = await userService.updateUser(user)
+
+        return res
+            .status(response.statusCode)
+            .send(response)
+
+    } catch (error) {
+        return res
+            .status(error.statusCode ?? 500)
+            .send(resError(error))
+    }
+}
+
+export default { getAll, getById, update }
