@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ResponseHandler } from '../types/types';
 
 export default function errorHandler(
   err: any,
@@ -6,6 +7,13 @@ export default function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  const errors = err.errors || [{ message: err.message }];
-  res.status(err.status || 500).json({ errors });
+  const errors: ResponseHandler<Error> = {
+    isSuccessful: false,
+    data: null,
+    statusCode: err.status || 500,
+    message: err.message,
+    status: JSON.stringify(err.errors)
+  }
+  
+  res.status(err.status || 500).send(errors)
 }
