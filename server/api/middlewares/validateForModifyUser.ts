@@ -59,13 +59,10 @@ export default async function validateForModifyUser(
         return
     }
 
-
     if(user.data.role === "admin") {
         next()
         return
     }
-
-    console.log(typeof req.body.role)
 
     if(typeof req.body.role !== undefined) {
         unauthorizedResponse.statusCode = 403

@@ -7,4 +7,4 @@ export const find = async(category: ICategory) => await categoryModel.find(categ
 export const create = async(category: ICategory) => await (new categoryModel(category)).save()
 export const update = async(category: ICategory) => await categoryModel.findOne(category)
 export const deletecategory = async(categoryId: string) => await categoryModel.deleteOne({ _id: categoryId })
-export const getAll = async(limit: number) => await categoryModel.find().limit(limit)
+export const getAll = async() => await categoryModel.find()

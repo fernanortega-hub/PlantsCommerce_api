@@ -15,20 +15,25 @@ const ProductSchema = new Schema<IProduct>({
         required: true
     },
     categories: [{
-        type: Array,
-        of: Schema.Types.ObjectId,
-        ref: 'category'
+        type: Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true
     }],
     description: {
         type: String,
         required: true,
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, {
     timestamps: true,
     toJSON: {
-        transform(_, ret) {
+        transform: function (ret) {
             delete ret.__v;
-        },
+        }
     }
 })
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import userController from '../controllers/user.controller';
-import validateForModifyUser from '../middlewares/validateForUpdateUser';
+import validateForModifyUser from '../middlewares/validateForModifyUser';
 
 const userRouter = express
     .Router()

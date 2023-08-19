@@ -47,17 +47,6 @@ UserSchema.pre('save', async function (next) {
     next()
 })
 
-// UserSchema.pre('findOneAndUpdate', async function (this) {
-//     const salt = await bcrypt.genSalt(parseInt(process.env.SALT!!))
-//     let update = this.getUpdate() as IUser
-
-//     const isNewPassword = bcrypt.compare(update.password, )
-
-//     update.password = await bcrypt.hash(update.password, salt)
-
-//     this.setUpdate(update)
-// })
-
 UserSchema.methods.validPassword = async function validPassword(password: string) {
     const valid = await bcrypt.compare(password, this.password)
     return valid;

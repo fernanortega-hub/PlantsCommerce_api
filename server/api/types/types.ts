@@ -21,18 +21,26 @@ export interface IUserMethods {
 export type UserModel = Model<IUser, {}, IUserMethods> 
 
 export interface IProduct {
-    id?: string,
-    name?: string,
-    stock?: number,
-    imageUrl?: string | null,
-    categories?: Array<Types.ObjectId>,
-    description?: string,
-    price?: number
+    _id?: string,
+    name: string,
+    stock: number,
+    imageUrl: string | null,
+    categories: Array<Types.ObjectId>,
+    description: string,
+    price: number,
+    user: Types.ObjectId
 } 
 
+export interface IProductMethods {
+    findByCategory(categoryId: string): Promise<Array<IProduct>>
+}
+
 export interface ICategory {
+    _id?: string
     name: string
 }
+
+export type ProductModel = Model<IProduct, {}, IProductMethods> 
 
 /**
  * Interfaz para enviar todo un tipo de respuesta general a traves de toda la api
