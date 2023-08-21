@@ -43,8 +43,6 @@ async function getByCategory(categoryId: string): Promise<ResponseHandler<IProdu
         data: []
     }
 
-
-
     response.isSuccessful = products.length !== 0
     response.data = products
     response.statusCode = products.length !== 0 ? 200 : 404
@@ -68,7 +66,7 @@ async function getAll(limit: number): Promise<ResponseHandler<IProduct[]>> {
     response.isSuccessful = products.length !== 0
     response.data = products
     response.statusCode = products.length !== 0 ? 200 : 404
-    response.message = products.length !== 0 ? "Users founded" : "Not users"
+    response.message = products.length !== 0 ? "Products founded" : "Not products"
     response.status = products.length !== 0 ? "Founded" : "Not found"
 
     return response;
@@ -83,7 +81,7 @@ async function createProduct(product: IProduct): Promise<ResponseHandler<IProduc
         status: 'Bad request'
     }
 
-    const existingUser = await get({ _id: product.user._id })
+    const existingUser = await get({ _id: product.user })
 
     if(!existingUser) {
         response.message = "User not found"
@@ -92,7 +90,7 @@ async function createProduct(product: IProduct): Promise<ResponseHandler<IProduc
         return response
     }
 
-    if(product.categories.length <= 0) {
+    if(!product.categories || product.categories.length <= 0) {
         response.message = "At least one category is required"
         response.status = "Bad request"
         response.statusCode = 400
@@ -118,12 +116,21 @@ async function createProduct(product: IProduct): Promise<ResponseHandler<IProduc
         categoryIds.push(newCategory.id)
     })
 
+    console.log(mapped)
+
     const newProduct: IProduct = {
         ...product,
         categories: categoryIds
     }
 
     const res = await productRepository.create(newProduct);
+
+    if(!res) {
+        response.message = "Cannot create the product"
+        response.statusCode = 500
+        response.status = "Internal Error"
+        return response
+    }
 
     response.data = res
     response.isSuccessful = true
@@ -160,7 +167,7 @@ async function updateProduct(product: IProduct): Promise<ResponseHandler<ICatego
 
     const categoryIds: Types.ObjectId[] = []
 
-    if(product.categories.length <= 0) {
+    if(!product.categories || product.categories.length <= 0) {
         response.message = "At least one category is required"
         response.status = "Bad request"
         response.statusCode = 400
@@ -232,9 +239,9 @@ async function deleteProduct(id: string): Promise<ResponseHandler<Boolean | null
         return response
     }
 
-    const userDeleted = await productRepository.deleteProduct(id)
+    const productDeleted = await productRepository.deleteProduct(id)
 
-    if (!userDeleted) {
+    if (!productDeleted) {
         response.message = "Cannot delete product"
         response.status = "Service error"
         response.statusCode = 500

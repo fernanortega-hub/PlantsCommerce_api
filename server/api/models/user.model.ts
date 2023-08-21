@@ -2,7 +2,6 @@ import { Schema, model } from "mongoose";
 import { IUser, IUserMethods, UserModel } from "../types/types";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
-import { rename } from "fs";
 
 const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
     firstName: {
@@ -53,7 +52,7 @@ UserSchema.methods.validPassword = async function validPassword(password: string
 }
 
 UserSchema.methods.generateJwt = function generateJwt() {
-    return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET!!);
+    return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET!!, { expiresIn: '24h' });
 };
 
 UserSchema.methods.generateRecoveryJwt = function generateRecoveryJwt() {

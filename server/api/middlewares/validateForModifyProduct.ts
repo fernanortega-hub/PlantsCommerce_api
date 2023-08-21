@@ -45,6 +45,7 @@ export default async function validateForModifyProduct(
             .send(unauthorizedResponse)
         return
     }
+
     const { _id }: any = payload
 
     const user = await userService.getById(_id)
@@ -59,12 +60,9 @@ export default async function validateForModifyProduct(
     const product = await productService.getById(req.body._id)
 
     if (!product.isSuccessful || product.data === null) {
-        unauthorizedResponse.statusCode = 500
-        unauthorizedResponse.status = "Internal Server Error"
-        unauthorizedResponse.message = "Cannot modify this product, try later"
         res
-            .status(500)
-            .send(unauthorizedResponse)
+            .status(product.statusCode)
+            .send(product)
         return
     }
 

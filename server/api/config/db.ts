@@ -8,6 +8,6 @@ export const dbConnection = async () => {
             .connect(process.env.MONGO_URI!!)
         l.info('Database connected')
     } catch (error) {
-        throw new Error("Connection rejected")
+        l.error(`Connection rejected: ${error}`)
     }
 }

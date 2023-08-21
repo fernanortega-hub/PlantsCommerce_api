@@ -116,13 +116,20 @@ async function registerUser(user: IUser): Promise<ResponseHandler<IUser | null>>
 
     if (isNew != null) {
         response.statusCode = 409
-        response.status = 'ERROR'
+        response.status = 'Conflict'
         response.message = 'User already exists'
 
         return response;
     }
 
     const newUser = await userRepository.create(user);
+
+    if(!newUser) {
+        response.message = "Cannot register this user"
+        response.statusCode = 500
+        response.status = "Internal error"
+        return response
+    }
 
     response.data = newUser
     response.isSuccessful = true
