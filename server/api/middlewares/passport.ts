@@ -7,7 +7,7 @@ const options: StrategyOptions = {
     secretOrKey: process.env.JWT_TOKEN_SECRET
 };
 
-passport.use(
+const passportMiddleware = passport.use(
     new Strategy(options, async (payload: any, done: any) => {   
         try {
             const user = await userService.getById(payload.id)
@@ -18,3 +18,5 @@ passport.use(
         }
     })
 )
+
+export default passportMiddleware
