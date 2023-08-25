@@ -26,6 +26,6 @@
     "baseUrl": "."
 
   },
-  "include": ["server/**/**/**/**.ts"],
+  "include": ["server/**/**/**/**/*.ts"],
   "exclude": ["node_modules"]
 }

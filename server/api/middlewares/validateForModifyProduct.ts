@@ -3,6 +3,7 @@ import { ResponseHandler } from "../types/types"
 import { verify } from "jsonwebtoken"
 import userService from "../services/user.service"
 import productService from "../services/product.service"
+import extractToken from "../utils/extractToken"
 
 export default async function validateForModifyProduct(
     req: Request,
@@ -17,25 +18,14 @@ export default async function validateForModifyProduct(
         message: 'Unauthorized user'
     }
 
-    const auth = req.headers.authorization ?? null
+    const token = extractToken(req)
 
-    if (auth == null) {
+    if (!token) {
         res
-            .status(403)
+            .status(404)
             .send(unauthorizedResponse)
         return
     }
-
-
-    const [bearer, token] = auth.split(' ')
-
-    if (bearer.trim().length === 0 || token.trim().length === 0) {
-        res
-            .status(403)
-            .send(unauthorizedResponse)
-        return
-    }
-
 
     const payload = verify(token, process.env.JWT_TOKEN_SECRET!!)
 

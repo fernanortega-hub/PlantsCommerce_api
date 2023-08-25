@@ -2,6 +2,7 @@ import { verify } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { ResponseHandler } from "../types/types";
 import userService from "../services/user.service";
+import extractToken from "../utils/extractToken";
 
 /**
  * 
@@ -20,19 +21,9 @@ export default async function validateForModifyUser(
         message: 'Unauthorized user'
     }
 
-    const auth = req.headers.authorization ?? null
-
-    if (auth == null) {
-        res
-            .status(403)
-            .send(unauthorizedResponse)
-        return
-    }
-
-
-    const [bearer, token] = auth.split(' ')
-
-    if (bearer.trim().length === 0 || token.trim().length === 0) {
+    const token = extractToken(req)
+    
+    if (!token) {
         res
             .status(403)
             .send(unauthorizedResponse)

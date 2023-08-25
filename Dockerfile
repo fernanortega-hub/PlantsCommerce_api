@@ -12,7 +12,7 @@ RUN npm install
 # Copiamos el codigo fuente (o archivos necesarios) de la aplicación.
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5000
 
 #Ejecutar la aplicación.
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

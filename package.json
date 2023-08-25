@@ -4,7 +4,7 @@
   "description": "Proyecto de e-commerce de plantas",
   "main": "dist/index.js",
   "scripts": {
-    "start": "ts-node build.ts && tsc && node dist/index.js",
+    "start": "ts-node build.ts && tsc && node dist/index.js && pino-pretty",
     "compile": "ts-node build.ts && tsc",
     "dev": "nodemon server/index.ts | pino-pretty",
     "dev:debug": "nodemon --exec \"node -r ts-node/register --inspect-brk\" server/index.ts | pino-pretty",
@@ -23,13 +23,13 @@
     "express-openapi-validator": "^4.13.8",
     "express-validator": "^6.14.2",
     "http-errors": "~1.6.3",
-    "jade": "^1.9.2",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^6.7.1",
     "morgan": "^1.10.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
-    "pino": "^7.8.1"
+    "pino": "^7.8.1",
+    "pug": "^3.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
@@ -58,6 +58,9 @@
     "supertest": "^6.1.6",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
+  },
+  "overrides": {
+    "semver": "^7.5.3"
   },
   "author": "Carmine DiMascio <cdimascio@gmail.com> (https://github.com/cdimascio)"
 }
